@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1" />
+<link href="/styles/eval.css" rel="stylesheet" type="text/css">
+<head>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script language="javascript" type="text/javascript">
+		$(function() {
+			var conn_status = 'Disconnected';
+			var eval_status = 'Disconnected';
+
+			var wsUri = (window.location.protocol==='https:'&&'wss://'||'ws://')+window.location.host+window.location.pathname;
+			var conn = new WebSocket(wsUri);
+
+			conn.onopen = function() {
+				conn_status = 'Connected';
+				eval_status = 'Ready';
+
+				update_ui();
+			};
+
+			conn.onmessage = function(e) {
+				var data = JSON.parse(e.data);
+				switch (data.action) {
+				case  'eval_compilation_error':
+					eval_status = 'Compilation error'
+					break;
+				case  'eval_result':
+					displayEvalResult(data.stdout, data.traceback, data.returned);
+					eval_status = 'Received'
+					break;
+				}
+
+				update_ui();
+			};
+
+			conn.onclose = function() {
+				conn_status = 'Disconnected. Please, refresh page';
+				eval_status = 'Disconnected';
+
+				update_ui();
+			};
+
+			function displayEvalResult(stdout, traceback, returned) {
+				function appendText(objID, text) {
+					var control = $(objID);
+					var escaped = $('<div/>').text(text).html();
+                                        control.html(control.html() + escaped);
+                                        control.scrollTop(control.scrollTop() + 1000);
+				}
+
+				var stdoutText = '';
+				if (stdout) {
+					stdoutText += stdout+'\n';
+				}
+
+				if (traceback) {
+					stdoutText += '>>>>>>Traceback<<<<<<\n'+traceback+'\n';
+				}
+
+				appendText('#stdout', stdoutText)
+
+				if (returned) {
+					appendText('#returned', returned+'\n');
+				}
+                        }
+
+			function update_ui() {
+				$('#connection_status').text('Connection status: ' + conn_status);
+				$('#evaluation_status').text('Evaluation status: ' + eval_status);
+			}
+
+			$('#eval').on('click', function() {
+				if (conn.readyState === conn.CLOSED) {
+					return false;
+				}
+
+				var program = $('#program');
+
+				var text = program.val();
+				text = text.trim();
+
+				program.val(text);
+				if (text) {
+					conn.send(text);
+					program.focus();
+
+					eval_status = 'Sent code';
+					update_ui();
+				}
+
+				return false;
+			});
+
+			$('#program').on('keydown', function(e) {
+				if (e.keyCode === 13 && e.shiftKey) {
+					$('#eval').click();
+					e.preventDefault();
+					
+					return false;
+				}
+			});
+		});
+		</script>
+</head>
+<body>
+<span><p id="connection_status">Connection status: unknown</p>
+	<p id="evaluation_status">Evaluation status: unknown</p></span>
+<header>IOMirea<img id="logo" /></header>
+<p>STDOUT:</p>
+<div id="stdout"></div>
+<p>RETURNED:</p>
+<div id="returned"></div>
+<p>Fast eval: shift+enter</p>
+<form id="evalInputForm" onsubmit="return false;">
+	<textarea id="text"></textarea>
+	<input id="eval" type="button" value="Eval" />
+</form>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1"/>
+	<link href="styles/common.css" rel="stylesheet" type="text/css">
+	<link href="styles/register.css" rel="stylesheet" type="text/css">
+<head>
+	<title>Registration</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script language="javascript" type="text/javascript">
+     		$(function() {
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if (this.readyState !== XMLHttpRequest.DONE) {
+					return
+				}
+				if (this.status === 400) {
+					// TODO: better error handling
+					alert('Registration error\n'+this.statusText)
+				} else if (this.status === 200) {
+					// redirect from server
+					window.location.href = this.responseURL
+				} else {
+					alert('Something went terribly wrong. Please, try to refresh page or return back later')
+				}
+			}
+			$('#auth_form').on('submit', function(e) {
+				// TODO: do not send until fields are not empty
+				xhr.open('POST', window.location.href, true)
+	                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				xhr.send(
+					'nickname=' + $('#nickname_field').val() +
+					'&email='   + $('#email_field').val()    +
+					'&password='+ $('#password_field').val()
+				)
+			})
+		});
+	</script>
+</head>
+<body>
+	<div>
+		<form id="auth_form" onsubmit="return false;">
+			<header>
+				<img id="logo"/>IOMirea</header>
+			<p>Nickname
+				<input class="uinp" id="nickname_field" name="nickname" required autocorrect="off" type="text">Email
+				<input class="uinp" id="email_field" name="email" required autocorrect="off" type="email">Password
+				<input class="uinp" id="password_field" name="password" required autocorrect="off" type="password"></p>
+			<input class="button" value="Register" type="submit">
+		</form>
+	</div>
+</body>
+</html>

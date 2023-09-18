@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+	<meta charset="utf-8">
+	<link href="styles/common.css" rel="stylesheet" type="text/css">
+	<link href="styles/email.css" rel="stylesheet" type="text/css">
+<body>
+	<div>
+		<header><img id="logo"/>IOMirea</header>
+		{% if confirmed %}
+		Email successfully confirmed!
+		{% else %}
+		Wrong confirmation code!<br><br>
+		Please, let us know if you have registration problems.<br>
+		Notice: email confirmation codes are valid for 24 hours
+		{% endif %}
+	</div>
+</body>
+</html>
